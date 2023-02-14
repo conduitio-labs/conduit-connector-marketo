@@ -29,7 +29,7 @@ require (
 	github.com/mitchellh/go-testing-interface v1.14.1 // indirect
 	github.com/oklog/run v1.1.0 // indirect
 	github.com/rs/zerolog v1.28.0 // indirect
-	go.uber.org/goleak v1.2.0
+	go.uber.org/goleak v1.2.1
 	golang.org/x/net v0.0.0-20220926192436-02166a98028e // indirect
 	golang.org/x/sys v0.0.0-20220926163933-8cfa568d3c25 // indirect
 	golang.org/x/text v0.3.7 // indirect
