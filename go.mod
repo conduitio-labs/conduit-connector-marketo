@@ -7,7 +7,7 @@ require (
 	github.com/conduitio/conduit-connector-sdk v0.3.0
 	github.com/goombaio/namegenerator v0.0.0-20181006234301-989e774b106e
 	github.com/jpillora/backoff v1.0.0
-	golang.org/x/sync v0.0.0-20220513210516-0976fa681c29
+	golang.org/x/sync v0.1.0
 	gopkg.in/tomb.v2 v2.0.0-20161208151619-d5d1b5820637
 )
 
