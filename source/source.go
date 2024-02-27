@@ -1,4 +1,4 @@
-// Copyright © 2022 Meroxa, Inc.
+// Copyright © 2024 Meroxa, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -151,7 +151,7 @@ func (s *Source) Ack(ctx context.Context, pos sdk.Position) error {
 	return nil
 }
 
-func (s *Source) Teardown(ctx context.Context) error {
+func (s *Source) Teardown(_ context.Context) error {
 	if s.iterator != nil {
 		s.iterator.Stop()
 	}
