@@ -22,9 +22,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/conduitio/conduit-commons/opencdc"
 	sdk "github.com/conduitio/conduit-connector-sdk"
-	"github.com/rustiever/conduit-connector-marketo/config"
 	"github.com/rustiever/conduit-connector-marketo/source"
+	sourceConfig "github.com/rustiever/conduit-connector-marketo/source/config"
 	"github.com/rustiever/conduit-connector-marketo/source/position"
 )
 
@@ -167,8 +168,8 @@ func TestSource_NonExistentDatabase(t *testing.T) {
 		_ = src.Teardown(ctx)
 	}()
 	cfg := getConfigs()
-	cfg[config.ClientID] = "non-existent"
-	cfg[config.ClientSecret] = "non-existent"
+	cfg[sourceConfig.SourceConfigClientID] = "non-existent"
+	cfg[sourceConfig.SourceConfigClientSecret] = "non-existent"
 	err := src.Configure(ctx, cfg)
 	if err != nil {
 		t.Errorf("expected no error, got %v", err)
@@ -247,7 +248,7 @@ func TestCDC_Delete(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	var rec sdk.Record
+	var rec opencdc.Record
 	for _, lead := range testLeads {
 		rec = nextRecord(ctx, src, t)
 		assert(t, &rec, lead)
@@ -293,7 +294,7 @@ func TestSource_CDC_ReadRecordsInsertAfterTeardown(t *testing.T) {
 			t.Error(err)
 		}
 	})
-	var rec sdk.Record
+	var rec opencdc.Record
 	for _, lead := range testLeads {
 		rec = nextRecord(ctx, src, t)
 		assert(t, &rec, lead)

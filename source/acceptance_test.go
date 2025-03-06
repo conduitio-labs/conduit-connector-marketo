@@ -21,6 +21,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/conduitio/conduit-commons/opencdc"
 	sdk "github.com/conduitio/conduit-connector-sdk"
 	"github.com/matryer/is"
 
@@ -67,20 +68,20 @@ func TestAcceptance(t *testing.T) {
 	)
 }
 
-// AcceptanceTestDriver implements sdk.AcceptanceTestDriver
+// AcceptanceTestDriver implements sdk.AcceptanceTestDriver.
 type AcceptanceTestDriver struct {
 	sdk.ConfigurableAcceptanceTestDriver
 }
 
-// WriteToSource writes data for source to pull data from
-func (d AcceptanceTestDriver) WriteToSource(t *testing.T, records []sdk.Record) []sdk.Record {
+// WriteToSource writes data for source to pull data from.
+func (d AcceptanceTestDriver) WriteToSource(t *testing.T, records []opencdc.Record) []opencdc.Record {
 	var err error
 	is := is.New(t)
 	client, err := getClient()
 	is.NoErr(err)
 	leads, err := client.addLeads(len(records))
 	is.NoErr(err)
-	var emailIDs = make([]string, 0)
+	emailIDs := make([]string, 0)
 	for _, v := range leads {
 		emailIDs = append(emailIDs, v["email"].(string))
 	}
@@ -92,7 +93,7 @@ func (d AcceptanceTestDriver) WriteToSource(t *testing.T, records []sdk.Record) 
 	return records
 }
 
-func writeRecords(client Client, emailIDs []string) ([]sdk.Record, error) {
+func writeRecords(client Client, emailIDs []string) ([]opencdc.Record, error) {
 	data, err := client.filterLeads("email", emailIDs)
 	if err != nil {
 		return nil, err
@@ -102,7 +103,7 @@ func writeRecords(client Client, emailIDs []string) ([]sdk.Record, error) {
 	if err != nil {
 		return nil, err
 	}
-	var records = make([]sdk.Record, 0)
+	records := make([]opencdc.Record, 0)
 	for _, v := range record {
 		id := int(v["id"].(float64))
 		data, err = client.getLeadByID(id, Fields)
@@ -124,14 +125,14 @@ func writeRecords(client Client, emailIDs []string) ([]sdk.Record, error) {
 	return records, err
 }
 
-func prepareRecord(data map[string]interface{}) (sdk.Record, error) {
+func prepareRecord(data map[string]interface{}) (opencdc.Record, error) {
 	createdAt, err := time.Parse(time.RFC3339, fmt.Sprintf("%s", data["createdAt"]))
 	if err != nil {
-		return sdk.Record{}, fmt.Errorf("error parsing createdAt %w", err)
+		return opencdc.Record{}, fmt.Errorf("error parsing createdAt %w", err)
 	}
 	updatedAt, err := time.Parse(time.RFC3339, fmt.Sprintf("%s", data["updatedAt"]))
 	if err != nil {
-		return sdk.Record{}, fmt.Errorf("error parsing updatedAt %w", err)
+		return opencdc.Record{}, fmt.Errorf("error parsing updatedAt %w", err)
 	}
 	position := position.Position{
 		Key:       fmt.Sprint(data["id"]),
@@ -141,15 +142,15 @@ func prepareRecord(data map[string]interface{}) (sdk.Record, error) {
 	}
 	pos, err := position.ToRecordPosition()
 	if err != nil {
-		return sdk.Record{}, fmt.Errorf("error converting position to record position %w", err)
+		return opencdc.Record{}, fmt.Errorf("error converting position to record position %w", err)
 	}
 
-	metadata := make(sdk.Metadata)
+	metadata := make(opencdc.Metadata)
 	metadata["id"] = position.Key
 	metadata.SetCreatedAt(createdAt)
 	metadata["updatedAt"] = strconv.FormatInt(updatedAt.UnixNano(), 10)
 
 	return sdk.Util.Source.NewRecordCreate(
-		pos, metadata, sdk.RawData(position.Key), sdk.StructuredData(data),
+		pos, metadata, opencdc.RawData(position.Key), opencdc.StructuredData(data),
 	), nil
 }

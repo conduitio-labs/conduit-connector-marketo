@@ -11,5 +11,20 @@ test:
 	# But most of the time tests will finish in 10-15 mins.
 	go test $(GOTEST_FLAGS) -p 1 -timeout 1h -v -race ./...
 
+.PHONY: install-tools
+install-tools:
+	@echo Installing tools from tools.go
+	@go list -e -f '{{ join .Imports "\n" }}' tools.go | xargs -I % go list -f "%@{{.Module.Version}}" % | xargs -tI % go install %
+	@go mod tidy
+
+.PHONY: generate
+generate:
+	go generate ./...
+
+.PHONY: fmt
+fmt:
+	gofumpt -l -w .
+
+.PHONY: lint
 lint:
 	golangci-lint run ./...

@@ -15,85 +15,37 @@
 package config
 
 import (
-	"context"
 	"fmt"
-	"strings"
 	"time"
 
-	sdk "github.com/conduitio/conduit-connector-sdk"
 	"github.com/rustiever/conduit-connector-marketo/config"
 )
 
-const (
-	// Marketo CDC polling period
-	KeyPollingPeriod = "pollingPeriod"
-	// KeySnapshotInitialDate is a date from which the snapshot iterator initially starts getting records.
-	KeySnapshotInitialDate = "snapshotInitialDate"
-	// Fields to retrieve from Marketo database
-	KeyFields = "fields"
-	// DefaultPollingPeriod is the value assumed for the pooling period when the
-	// config omits the polling period parameter
-	DefaultPollingPeriod = time.Minute
-)
+//go:generate paramgen -output=paramgen.go SourceConfig
 
-// SourceConfig represents source configuration with GCS configurations
+// SourceConfig represents source configuration with GCS configurations.
 type SourceConfig struct {
 	config.Config
-	PollingPeriod       time.Duration
-	SnapshotInitialDate time.Time
-	Fields              []string
+	// PollingPeriod is the polling time for CDC mode. Less than 10s is not recommended.
+	PollingPeriod time.Duration `json:"pollingPeriod" default:"1m"`
+	// SnapshotInitialDate is the date from which the snapshot iterator initially starts getting records.
+	SnapshotInitialDate string `json:"snapshotInitialDate"`
+	// Fields are comma seperated fields to fetch from Marketo Leads.
+	Fields []string `json:"fields" default:"id,createdAt,updatedAt,firstName,lastName,email"`
 }
 
-// ParseSourceConfig attempts to parse the configurations into a SourceConfig struct that Source could utilize
-func ParseSourceConfig(ctx context.Context, cfg map[string]string) (SourceConfig, error) {
-	logger := sdk.Logger(ctx).With().Str("Method", "ParseSourceConfig").Logger()
-	logger.Trace().Msg("Start Parsing the Config")
-
-	globalConfig, err := config.ParseGlobalConfig(ctx, cfg)
-	if err != nil {
-		logger.Error().Stack().Err(err).Msg("Error While Parsing the Global Config")
-		return SourceConfig{}, fmt.Errorf("parse global config: %w", err)
+func (c *SourceConfig) Validate() error {
+	if c.PollingPeriod < 0 {
+		return fmt.Errorf(
+			"%q config value should be positive, got %s",
+			SourceConfigPollingPeriod,
+			c.PollingPeriod,
+		)
 	}
 
-	sourceConfig := SourceConfig{
-		Config:        globalConfig,
-		PollingPeriod: DefaultPollingPeriod,
-		Fields:        []string{"id", "createdAt", "updatedAt", "firstName", "lastName", "email"},
+	if len(c.Fields) != 0 {
+		c.Fields = append([]string{"id", "createdAt", "updatedAt"}, c.Fields...)
 	}
 
-	if pollingPeriodString := cfg[KeyPollingPeriod]; pollingPeriodString != "" {
-		sourceConfig.PollingPeriod, err = time.ParseDuration(pollingPeriodString)
-		if err != nil {
-			return SourceConfig{}, fmt.Errorf(
-				"%q config value should be a valid duration: %w",
-				KeyPollingPeriod, err,
-			)
-		}
-
-		if sourceConfig.PollingPeriod <= 0 {
-			return SourceConfig{}, fmt.Errorf(
-				"%q config value should be positive, got %s",
-				KeyPollingPeriod,
-				sourceConfig.PollingPeriod,
-			)
-		}
-	}
-
-	if snapshotInitialDateString := cfg[KeySnapshotInitialDate]; snapshotInitialDateString != "" {
-		sourceConfig.SnapshotInitialDate, err = time.Parse(time.RFC3339, snapshotInitialDateString)
-		if err != nil {
-			return SourceConfig{}, fmt.Errorf(
-				"%q config value should be a valid ISO 8601/RFC 3339 time: %w",
-				KeySnapshotInitialDate, err,
-			)
-		}
-	}
-
-	if cfg[KeyFields] != "" {
-		sourceConfig.Fields = []string{"id", "createdAt", "updatedAt"}
-		sourceConfig.Fields = append(sourceConfig.Fields, strings.Split(cfg[KeyFields], ",")...)
-	}
-
-	logger.Trace().Msg("Stop Parsing the Config")
-	return sourceConfig, nil
+	return nil
 }

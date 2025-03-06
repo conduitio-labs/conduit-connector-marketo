@@ -25,6 +25,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/conduitio/conduit-commons/opencdc"
 	sdk "github.com/conduitio/conduit-connector-sdk"
 	marketoclient "github.com/rustiever/conduit-connector-marketo/marketo-client"
 	"github.com/rustiever/conduit-connector-marketo/source/position"
@@ -37,7 +38,7 @@ const (
 	MaximumHoursGap = 744 // 31 days in Hours
 )
 
-// to handle snapshot iterator
+// to handle snapshot iterator.
 type SnapshotIterator struct {
 	client          *marketoclient.Client
 	initialDate     time.Time        // holds the initial date of the snapshot
@@ -116,7 +117,7 @@ func (s *SnapshotIterator) HasNext(ctx context.Context) bool {
 }
 
 // returns Next record from the iterator's buffer, otherwise returns error.
-func (s *SnapshotIterator) Next(ctx context.Context) (sdk.Record, error) {
+func (s *SnapshotIterator) Next(ctx context.Context) (opencdc.Record, error) {
 	logger := sdk.Logger(ctx).With().Str("Method", "Next").Logger()
 	logger.Trace().Msg("Starting the Next method")
 
@@ -125,27 +126,27 @@ func (s *SnapshotIterator) Next(ctx context.Context) (sdk.Record, error) {
 		err := s.stop(ctx)
 		if err != nil {
 			logger.Error().Err(err).Msg("Error while stopping the SnapshotIterator")
-			return sdk.Record{}, fmt.Errorf("%v;error while stopping the SnapshotIterator: %w", ctx.Err(), err)
+			return opencdc.Record{}, fmt.Errorf("%w;error while stopping the SnapshotIterator: %w", ctx.Err(), err)
 		}
-		return sdk.Record{}, fmt.Errorf("context is done: %w", ctx.Err())
+		return opencdc.Record{}, fmt.Errorf("context is done: %w", ctx.Err())
 	case e1 := <-s.errChan:
 		logger.Error().Err(e1).Msg("Error while pulling from Marketo or flushing to buffer")
 		logger.Info().Msg("Stopping the SnapshotIterator...")
 		e2 := s.stop(ctx)
 		if e2 != nil {
 			logger.Error().Err(e2).Msg("Error while stopping the SnapshotIterator")
-			return sdk.Record{}, fmt.Errorf("%w; error while stopping snapshot iterator: %v", e1, e2)
+			return opencdc.Record{}, fmt.Errorf("%w; error while stopping snapshot iterator: %w", e1, e2)
 		}
-		return sdk.Record{}, fmt.Errorf("error occured during pulling or flushing records from marketo to buffer: %w", e1)
+		return opencdc.Record{}, fmt.Errorf("error occured during pulling or flushing records from marketo to buffer: %w", e1)
 	case data, ok := <-s.data:
 		if !ok {
 			logger.Info().Msg("Buffer is empty")
-			return sdk.Record{}, sdk.ErrBackoffRetry
+			return opencdc.Record{}, sdk.ErrBackoffRetry
 		}
 		record, err := s.prepareRecord(ctx, data)
 		if err != nil {
 			logger.Error().Err(err).Msg("Error while preparing record")
-			return sdk.Record{}, fmt.Errorf("error while preparing record: %w", err)
+			return opencdc.Record{}, fmt.Errorf("error while preparing record: %w", err)
 		}
 		return record, nil
 	}
@@ -284,20 +285,20 @@ func (s *SnapshotIterator) getLeads(ctx context.Context, startDate, endDate time
 	return nil
 }
 
-// prepares and returns record in sdk.Record format. If process fails for any reason, it returns error.
-func (s *SnapshotIterator) prepareRecord(ctx context.Context, data []string) (sdk.Record, error) {
+// prepares and returns record in opencdc.Record format. If process fails for any reason, it returns error.
+func (s *SnapshotIterator) prepareRecord(ctx context.Context, data []string) (opencdc.Record, error) {
 	logger := sdk.Logger(ctx).With().Str("Method", "prepareRecord").Logger()
 	logger.Trace().Msg("Starting the prepareRecord method")
-	var dataMap = marketoclient.GetDataMap(s.fields, data)
+	dataMap := marketoclient.GetDataMap(s.fields, data)
 	createdAt, err := time.Parse(time.RFC3339, fmt.Sprintf("%s", dataMap["createdAt"]))
 	if err != nil {
 		logger.Err(err).Msg("Error while parsing createdAt")
-		return sdk.Record{}, fmt.Errorf("error parsing createdAt %w", err)
+		return opencdc.Record{}, fmt.Errorf("error parsing createdAt %w", err)
 	}
 	updatedAt, err := time.Parse(time.RFC3339, fmt.Sprintf("%s", dataMap["updatedAt"]))
 	if err != nil {
 		logger.Err(err).Msg("Error while parsing updatedAt")
-		return sdk.Record{}, fmt.Errorf("error parsing updatedAt %w", err)
+		return opencdc.Record{}, fmt.Errorf("error parsing updatedAt %w", err)
 	}
 	if updatedAt.After(s.lastMaxModified) {
 		s.lastMaxModified = updatedAt
@@ -311,16 +312,16 @@ func (s *SnapshotIterator) prepareRecord(ctx context.Context, data []string) (sd
 	pos, err := position.ToRecordPosition()
 	if err != nil {
 		logger.Err(err).Msg("Error while converting position to record position")
-		return sdk.Record{}, fmt.Errorf("error converting position to record position %w", err)
+		return opencdc.Record{}, fmt.Errorf("error converting position to record position %w", err)
 	}
 
-	metadata := make(sdk.Metadata)
+	metadata := make(opencdc.Metadata)
 	metadata["id"] = position.Key
 	metadata.SetCreatedAt(createdAt)
 	metadata["updatedAt"] = strconv.FormatInt(updatedAt.UnixNano(), 10)
 
 	return sdk.Util.Source.NewRecordSnapshot(
-		pos, metadata, sdk.RawData(position.Key), sdk.StructuredData(dataMap),
+		pos, metadata, opencdc.RawData(position.Key), opencdc.StructuredData(dataMap),
 	), nil
 }
 
@@ -331,7 +332,7 @@ func (s *SnapshotIterator) getLastProcessedDate(ctx context.Context, p position.
 
 	// marketo api handles records at seconds level. When we start snapshot iterator with same last time,
 	// there is a chance of getting same records again. So we need to add 1 second to the last time.
-	var date = p.CreatedAt.Add(1 * time.Second)
+	date := p.CreatedAt.Add(1 * time.Second)
 	var err error
 	if reflect.ValueOf(p).IsZero() {
 		date, err = s.getLeastDate(ctx, *s.client)

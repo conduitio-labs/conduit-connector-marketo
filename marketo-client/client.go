@@ -35,7 +35,7 @@ var (
 	ErrCannotCancel = errors.New("cannot cancel export, since it is already in completed state")
 )
 
-// custom wrapper client for minimarketo client
+// custom wrapper client for minimarketo client.
 type Client struct {
 	minimarketo.Client
 }
@@ -157,18 +157,18 @@ func (c Client) CancelExportLeads(exportID string) error {
 // returns export job result in CSV format.
 func (c Client) FileExportLeads(ctx context.Context, endpoint string, exportID string) (*[]byte, error) {
 	path := fmt.Sprintf("/bulk/v1/leads/export/%s/file.json", exportID)
-	req, err := http.NewRequestWithContext(ctx, "GET", endpoint+path, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint+path, nil)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %v", err)
+		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
 	token, err := c.GetAuthToken()
 	if err != nil {
-		return nil, fmt.Errorf("failed to get auth token: %v", err)
+		return nil, fmt.Errorf("failed to get auth token: %w", err)
 	}
 	req.Header.Set("Authorization", "Bearer"+token)
 	response, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get response: %v", err)
+		return nil, fmt.Errorf("failed to get response: %w", err)
 	}
 	defer response.Body.Close()
 	body, err := io.ReadAll(response.Body)
@@ -278,7 +278,7 @@ func GetDataMap(keys []string, values []string) map[string]interface{} {
 	return dataMap
 }
 
-// retries the function until it returns false or an error
+// retries the function until it returns false or an error.
 type RetryFunc func() (bool, error)
 
 // retries supplied function using retry backoff strategy.
@@ -312,9 +312,9 @@ func WithRetry(ctx context.Context, r RetryFunc) error {
 	return nil
 }
 
-// returns filterd leads from marketo rest api
+// returns filterd leads from marketo rest api.
 func (c Client) FilterLeads(fileterType string, filterValues []int, fields []string, nextPageToken string) (*minimarketo.Response, error) {
-	var leads []string
+	leads := []string{}
 	for _, v := range filterValues {
 		leads = append(leads, strconv.Itoa(v))
 	}

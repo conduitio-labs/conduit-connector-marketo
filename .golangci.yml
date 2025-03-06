@@ -1,65 +1,81 @@
+run:
+  timeout: 5m 
+
 linters-settings:
-  gofmt:
-    simplify: false
-  govet:
-    check-shadowing: false
   nolintlint:
-    allow-unused: false # report any unused nolint directives
+    allow-: false # report any  nolint directives
     require-explanation: true # require an explanation for nolint directives
-    require-specific: true # require nolint directives to mention the specific linter being suppressed
-  gocyclo:
-    min-complexity: 20
-  goconst:
+    require-specific: true # require nolint directives to mention the specific linter being suppressed:
     ignore-tests: true
+  wrapcheck:
+    ignoreSigs:
+      - .Errorf(
+      - errors.New(
+      - errors.Unwrap(
+      - errors.Join(
+      - .Wrap(
+      - .Wrapf(
+      - .WithMessage(
+      - .WithMessagef(
+      - .WithStack(
+      - (context.Context).Err()
   goheader:
     template-path: '.golangci.goheader.template'
+    values:
+      regexp:
+        copyright-year: 20[2-9]\d
 
 linters:
   # please, do not use `enable-all`: it's deprecated and will be removed soon.
   # inverted configuration with `enable-all` and `disable` is not scalable during updates of golangci-lint
   disable-all: true
   enable:
+    - asasalint
+    - asciicheck
+    - bidichk
     - bodyclose
-    - deadcode
+    - containedctx
+    - contextcheck
+    - copyloopvar
+    - decorder
     # - depguard
+    - dupl
+    - dupword
+    - durationcheck
+    - errchkjson
+    - errname
     - dogsled
     - durationcheck
     - errcheck
     - errname
-    # - errorlint
-    # - exhaustive
+    - errorlint
+    - exhaustive
     # - exhaustivestruct
-    - exportloopref
     # - forbidigo
     # - forcetypeassert
     # - funlen
-    # - gochecknoinits
-    - goconst
     - gocritic
     - gocyclo
     # - cyclop # not interested in package complexities at the moment
-    # - godot
+    - godot
     - gofmt
-    # - gofumpt
-    - goheader
+    - gofumpt
     - goimports
     - revive
     # - gomnd
-    - gomoddirectives
-    - gomodguard
     - goprintffuncname
     - gosec
     - gosimple
     - govet
     # - ifshort
     - ineffassign
-    # - importas
+    - importas
     # - lll
     # - misspell
     - makezero
-    # - nakedret
-    # - nilerr
-    # - nilnil
+    - nakedret
+    - nilerr
+    - nilnil
     # - nlreturn
     - noctx
     - nolintlint
@@ -67,7 +83,6 @@ linters:
     - predeclared
     - rowserrcheck
     - staticcheck
-    - structcheck
     - stylecheck
     - sqlclosecheck
     # - tagliatelle
@@ -77,22 +92,28 @@ linters:
     - typecheck
     - unconvert
     # - unparam
-    - unused
-    - varcheck
     - wastedassign
     - whitespace
-  # - wrapcheck
-  # - wsl
-
-  # don't enable:
-  # - asciicheck
-  # - dupl
-  # - gochecknoglobals
-  # - gocognit
-  # - godox
-  # - goerr113
-  # - maligned
-  # - nestif
-  # - prealloc
-  # - testpackage
-  # - wsl
+    # - wrapcheck
+    # - wsl
+    - gochecknoinits
+    - godot
+    - gocheckcompilerdirectives
+    - gocognit
+    - grouper
+    - interfacebloat
+    - importas
+    - tenv
+    - mirror
+    - musttag
+    - nestif
+    - unparam
+    - loggercheck
+    - maintidx
+    - nosprintfhostport
+    - prealloc
+    - promlinter
+    - reassign
+    - testableexamples
+    - usestdlibvars
+    - zerologlint

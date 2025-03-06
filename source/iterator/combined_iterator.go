@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/conduitio/conduit-commons/opencdc"
 	sdk "github.com/conduitio/conduit-connector-sdk"
 	marketoclient "github.com/rustiever/conduit-connector-marketo/marketo-client"
 	"github.com/rustiever/conduit-connector-marketo/source/position"
@@ -98,7 +99,7 @@ func (c *CombinedIterator) HasNext(ctx context.Context) bool {
 	}
 }
 
-func (c *CombinedIterator) Next(ctx context.Context) (sdk.Record, error) {
+func (c *CombinedIterator) Next(ctx context.Context) (opencdc.Record, error) {
 	logger := sdk.Logger(ctx).With().Str("Method", "Next").Logger()
 	logger.Trace().Msg("Starting the Combined Iterator Next")
 
@@ -106,17 +107,17 @@ func (c *CombinedIterator) Next(ctx context.Context) (sdk.Record, error) {
 	case c.snapshotIterator != nil:
 		record, err := c.snapshotIterator.Next(ctx)
 		if err != nil {
-			return sdk.Record{}, err
+			return opencdc.Record{}, err
 		}
 		if !c.snapshotIterator.HasNext(ctx) {
 			logger.Info().Msg("Switching to CDC iterator...")
 			err := c.switchToCDCIterator(ctx, string(record.Key.Bytes()))
 			if err != nil {
-				return sdk.Record{}, err
+				return opencdc.Record{}, err
 			}
 			record.Position, err = position.ConvertToCDCPosition(record.Position)
 			if err != nil {
-				return sdk.Record{}, err
+				return opencdc.Record{}, err
 			}
 		}
 		return record, nil
@@ -125,7 +126,7 @@ func (c *CombinedIterator) Next(ctx context.Context) (sdk.Record, error) {
 		return c.cdcIterator.Next(ctx)
 	default:
 		logger.Error().Msg("Both the itertors are not initailsed")
-		return sdk.Record{}, errors.New("no initialized iterator")
+		return opencdc.Record{}, errors.New("no initialized iterator")
 	}
 }
 

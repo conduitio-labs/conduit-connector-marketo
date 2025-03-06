@@ -1,4 +1,4 @@
-// Copyright © 2022 Meroxa, Inc.
+// Copyright © 2024 Meroxa, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,17 +17,19 @@ package source
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/SpeakData/minimarketo"
+	commonsConfig "github.com/conduitio/conduit-commons/config"
+	"github.com/conduitio/conduit-commons/opencdc"
 	sdk "github.com/conduitio/conduit-connector-sdk"
-	globalConfig "github.com/rustiever/conduit-connector-marketo/config"
 	marketoclient "github.com/rustiever/conduit-connector-marketo/marketo-client"
 	"github.com/rustiever/conduit-connector-marketo/source/config"
 	"github.com/rustiever/conduit-connector-marketo/source/iterator"
 	"github.com/rustiever/conduit-connector-marketo/source/position"
 )
 
-// Source connector
+// Source connector.
 type Source struct {
 	sdk.UnimplementedSource
 	config   config.SourceConfig
@@ -37,7 +39,7 @@ type Source struct {
 
 type Iterator interface {
 	HasNext(ctx context.Context) bool
-	Next(ctx context.Context) (sdk.Record, error)
+	Next(ctx context.Context) (opencdc.Record, error)
 	Stop()
 }
 
@@ -46,59 +48,32 @@ func NewSource() sdk.Source {
 }
 
 // Parameters is a map of named Parameters that describe how to configure the Source.
-func (s *Source) Parameters() map[string]sdk.Parameter {
-	return map[string]sdk.Parameter{
-		globalConfig.ClientID: {
-			Required:    true,
-			Default:     "",
-			Description: "The client ID for the Marketo instance.",
-		},
-		globalConfig.ClientSecret: {
-			Required:    true,
-			Default:     "",
-			Description: "The client secret for the Marketo instance.",
-		},
-		globalConfig.ClientEndpoint: {
-			Required:    true,
-			Default:     "",
-			Description: "The endpoint for the Marketo instance.",
-		},
-		config.KeyPollingPeriod: {
-			Required:    false,
-			Default:     "1m",
-			Description: "The polling period CDC mode.",
-		},
-		config.KeySnapshotInitialDate: {
-			Required:    false,
-			Default:     "Creation date of the oldest record.",
-			Description: "The date from which the snapshot iterator initially starts getting records.",
-		},
-		config.KeyFields: {
-			Required:    false,
-			Default:     "id, createdAt, updatedAt, firstName, lastName, email",
-			Description: "The fields to be pulled from Marketo",
-		},
-	}
+func (s *Source) Parameters() commonsConfig.Parameters {
+	return s.config.Parameters()
 }
 
 // Configure parses and stores the configurations
-// returns an error in case of invalid config
-func (s *Source) Configure(ctx context.Context, cfg map[string]string) error {
+// returns an error in case of invalid config.
+func (s *Source) Configure(ctx context.Context, cfg commonsConfig.Config) error {
 	logger := sdk.Logger(ctx).With().Str("Class", "Source").Str("Method", "Configure").Logger()
 	logger.Trace().Msg("Starting Configuring the Source Connector...")
 
-	sourceConfig, err := config.ParseSourceConfig(ctx, cfg)
+	err := sdk.Util.ParseConfig(ctx, cfg, &s.config, NewSource().Parameters())
 	if err != nil {
-		logger.Error().Stack().Err(err).Msg("Error While parsing the Source Config")
-		return fmt.Errorf("couldn't parse the source config: %w", err)
+		return err
 	}
-	s.config = sourceConfig
+
+	err = s.config.Validate()
+	if err != nil {
+		return fmt.Errorf("error validating configuration: %w", err)
+	}
+
 	logger.Trace().Msg("Successfully Configured the Source Connector")
 	return err
 }
 
-// Open prepare the plugin to start sending records from the given position
-func (s *Source) Open(ctx context.Context, pos sdk.Position) error {
+// Open prepare the plugin to start sending records from the given position.
+func (s *Source) Open(ctx context.Context, pos opencdc.Position) error {
 	logger := sdk.Logger(ctx).With().Str("Class", "Source").Str("Method", "Open").Logger()
 	logger.Trace().Msg("Starting Open the Source Connector...")
 	p, err := position.ParseRecordPosition(pos)
@@ -119,7 +94,16 @@ func (s *Source) Open(ctx context.Context, pos sdk.Position) error {
 		logger.Error().Stack().Err(err).Msg("Error While Creating the Marketo Client")
 		return fmt.Errorf("couldn't create the marketo client: %w", err)
 	}
-	s.iterator, err = iterator.NewCombinedIterator(ctx, s.config.ClientEndpoint, s.config.PollingPeriod, s.client, p, s.config.Fields, s.config.SnapshotInitialDate)
+
+	snapshotInitialDate, err := time.Parse(time.RFC3339, s.config.SnapshotInitialDate)
+	if err != nil {
+		return fmt.Errorf(
+			"%q config value should be a valid ISO 8601/RFC 3339 time: %w",
+			s.config.SnapshotInitialDate, err,
+		)
+	}
+
+	s.iterator, err = iterator.NewCombinedIterator(ctx, s.config.ClientEndpoint, s.config.PollingPeriod, s.client, p, s.config.Fields, snapshotInitialDate)
 	if err != nil {
 		logger.Error().Stack().Err(err).Msg("Error while create a combined iterator")
 		return fmt.Errorf("couldn't create a combined iterator: %w", err)
@@ -128,30 +112,30 @@ func (s *Source) Open(ctx context.Context, pos sdk.Position) error {
 	return nil
 }
 
-// Read gets the next record from the Marketo Instance
-func (s *Source) Read(ctx context.Context) (sdk.Record, error) {
+// Read gets the next record from the Marketo Instance.
+func (s *Source) Read(ctx context.Context) (opencdc.Record, error) {
 	logger := sdk.Logger(ctx).With().Str("Class", "Source").Str("Method", "Read").Logger()
 	logger.Trace().Msg("Starting Read the Source Connector...")
 
 	if !s.iterator.HasNext(ctx) {
 		logger.Debug().Msg("No more records to read, sending sdk.ErrorBackoff...")
-		return sdk.Record{}, sdk.ErrBackoffRetry
+		return opencdc.Record{}, sdk.ErrBackoffRetry
 	}
 
 	record, err := s.iterator.Next(ctx)
 	if err != nil {
 		logger.Error().Stack().Err(err).Msg("Error while fetching the records")
-		return sdk.Record{}, fmt.Errorf("couldn't fetch the records: %w", err)
+		return opencdc.Record{}, fmt.Errorf("couldn't fetch the records: %w", err)
 	}
 	return record, nil
 }
 
-func (s *Source) Ack(ctx context.Context, pos sdk.Position) error {
+func (s *Source) Ack(ctx context.Context, pos opencdc.Position) error {
 	sdk.Logger(ctx).Debug().Str("position", string(pos)).Msg("got ack")
 	return nil
 }
 
-func (s *Source) Teardown(ctx context.Context) error {
+func (s *Source) Teardown(_ context.Context) error {
 	if s.iterator != nil {
 		s.iterator.Stop()
 	}

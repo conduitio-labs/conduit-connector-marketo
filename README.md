@@ -64,3 +64,6 @@ The Docker compose file at `test/docker-compose.yml` can be used to run the requ
 - Rate Limit: API access per instance limited to 100 calls per 20 seconds.
 - Daily Quota: Subscriptions are allocated 50,000 API calls per day (which resets daily at 12:00AM CST). You can increase your daily quota through your account manager.
 - The connector is able to send record's `Key` as `sdk.RawData` only.
+- **The integration tests are currently not configured:**. Signing up for a trial/sandbox account is relatively complex and since we use Marketo APIs here to fetch data the integration tests are not configured.
+
+![scarf pixel](https://static.scarf.sh/a.png?x-pxid=0d3bd3a2-ebd0-4fa7-840a-26f4fc15c2e9)

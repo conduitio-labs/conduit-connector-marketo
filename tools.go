@@ -12,14 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package config
+//go:build tools
 
-// Config represents configuration needed for Marketo.
-type Config struct {
-	// ClientID is the Client ID for Marketo Instance.
-	ClientID string `json:"clientID" validate:"required"`
-	// ClientSecret is the Client Secret for Marketo Instance.
-	ClientSecret string `json:"clientSecret" validate:"required"`
-	// ClientEndpoint is the Endpoint for Marketo Instance.
-	ClientEndpoint string `json:"clientEndpoint" validate:"required"`
-}
+package main
+
+import (
+	_ "github.com/conduitio/conduit-commons/paramgen"
+	_ "github.com/golangci/golangci-lint/cmd/golangci-lint"
+)
