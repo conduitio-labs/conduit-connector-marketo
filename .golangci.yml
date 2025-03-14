@@ -102,7 +102,6 @@ linters:
     - grouper
     - interfacebloat
     - importas
-    - tenv
     - mirror
     - musttag
     - nestif
