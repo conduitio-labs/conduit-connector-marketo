@@ -3,10 +3,9 @@ run:
 
 linters-settings:
   nolintlint:
-    allow-: false # report any  nolint directives
+    allow-unused: false # report any  nolint directives
     require-explanation: true # require an explanation for nolint directives
     require-specific: true # require nolint directives to mention the specific linter being suppressed:
-    ignore-tests: true
   wrapcheck:
     ignoreSigs:
       - .Errorf(
@@ -103,7 +102,6 @@ linters:
     - grouper
     - interfacebloat
     - importas
-    - tenv
     - mirror
     - musttag
     - nestif
