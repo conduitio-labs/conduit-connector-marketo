@@ -25,11 +25,11 @@ import (
 	"time"
 
 	"github.com/SpeakData/minimarketo"
+	"github.com/conduitio-labs/conduit-connector-marketo/source"
+	sourceConfig "github.com/conduitio-labs/conduit-connector-marketo/source/config"
 	"github.com/conduitio/conduit-commons/opencdc"
 	sdk "github.com/conduitio/conduit-connector-sdk"
 	"github.com/goombaio/namegenerator"
-	"github.com/rustiever/conduit-connector-marketo/source"
-	sourceConfig "github.com/rustiever/conduit-connector-marketo/source/config"
 )
 
 // actionTypes for createOrUpdate API endpoint.

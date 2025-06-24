@@ -18,7 +18,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/rustiever/conduit-connector-marketo/config"
+	"github.com/conduitio-labs/conduit-connector-marketo/config"
 )
 
 //go:generate paramgen -output=paramgen.go SourceConfig

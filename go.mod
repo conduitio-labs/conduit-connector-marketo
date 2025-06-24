@@ -1,4 +1,4 @@
-module github.com/rustiever/conduit-connector-marketo
+module github.com/conduitio-labs/conduit-connector-marketo
 
 go 1.23.2
 

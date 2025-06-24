@@ -25,10 +25,10 @@ import (
 	"strings"
 	"time"
 
+	marketoclient "github.com/conduitio-labs/conduit-connector-marketo/marketo-client"
+	"github.com/conduitio-labs/conduit-connector-marketo/source/position"
 	"github.com/conduitio/conduit-commons/opencdc"
 	sdk "github.com/conduitio/conduit-connector-sdk"
-	marketoclient "github.com/rustiever/conduit-connector-marketo/marketo-client"
-	"github.com/rustiever/conduit-connector-marketo/source/position"
 	"golang.org/x/sync/errgroup"
 )
 
