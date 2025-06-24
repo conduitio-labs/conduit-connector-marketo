@@ -23,10 +23,10 @@ import (
 	"strconv"
 	"time"
 
+	marketoclient "github.com/conduitio-labs/conduit-connector-marketo/marketo-client"
+	"github.com/conduitio-labs/conduit-connector-marketo/source/position"
 	"github.com/conduitio/conduit-commons/opencdc"
 	sdk "github.com/conduitio/conduit-connector-sdk"
-	marketoclient "github.com/rustiever/conduit-connector-marketo/marketo-client"
-	"github.com/rustiever/conduit-connector-marketo/source/position"
 	"gopkg.in/tomb.v2"
 )
 

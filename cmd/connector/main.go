@@ -15,8 +15,8 @@
 package main
 
 import (
+	marketo "github.com/conduitio-labs/conduit-connector-marketo"
 	sdk "github.com/conduitio/conduit-connector-sdk"
-	marketo "github.com/rustiever/conduit-connector-marketo"
 )
 
 func main() {

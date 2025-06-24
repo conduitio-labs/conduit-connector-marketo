@@ -22,11 +22,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/conduitio-labs/conduit-connector-marketo/source"
+	sourceConfig "github.com/conduitio-labs/conduit-connector-marketo/source/config"
+	"github.com/conduitio-labs/conduit-connector-marketo/source/position"
 	"github.com/conduitio/conduit-commons/opencdc"
 	sdk "github.com/conduitio/conduit-connector-sdk"
-	"github.com/rustiever/conduit-connector-marketo/source"
-	sourceConfig "github.com/rustiever/conduit-connector-marketo/source/config"
-	"github.com/rustiever/conduit-connector-marketo/source/position"
 )
 
 func TestSource_SuccessfullSnapshot(t *testing.T) {

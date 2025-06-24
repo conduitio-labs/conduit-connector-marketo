@@ -25,9 +25,9 @@ import (
 	sdk "github.com/conduitio/conduit-connector-sdk"
 	"github.com/matryer/is"
 
-	marketo "github.com/rustiever/conduit-connector-marketo"
-	"github.com/rustiever/conduit-connector-marketo/source"
-	"github.com/rustiever/conduit-connector-marketo/source/position"
+	marketo "github.com/conduitio-labs/conduit-connector-marketo"
+	"github.com/conduitio-labs/conduit-connector-marketo/source"
+	"github.com/conduitio-labs/conduit-connector-marketo/source/position"
 	"go.uber.org/goleak"
 )
 

@@ -20,13 +20,13 @@ import (
 	"time"
 
 	"github.com/SpeakData/minimarketo"
+	marketoclient "github.com/conduitio-labs/conduit-connector-marketo/marketo-client"
+	"github.com/conduitio-labs/conduit-connector-marketo/source/config"
+	"github.com/conduitio-labs/conduit-connector-marketo/source/iterator"
+	"github.com/conduitio-labs/conduit-connector-marketo/source/position"
 	commonsConfig "github.com/conduitio/conduit-commons/config"
 	"github.com/conduitio/conduit-commons/opencdc"
 	sdk "github.com/conduitio/conduit-connector-sdk"
-	marketoclient "github.com/rustiever/conduit-connector-marketo/marketo-client"
-	"github.com/rustiever/conduit-connector-marketo/source/config"
-	"github.com/rustiever/conduit-connector-marketo/source/iterator"
-	"github.com/rustiever/conduit-connector-marketo/source/position"
 )
 
 // Source connector.

@@ -15,8 +15,8 @@
 package marketo
 
 import (
+	"github.com/conduitio-labs/conduit-connector-marketo/source"
 	sdk "github.com/conduitio/conduit-connector-sdk"
-	"github.com/rustiever/conduit-connector-marketo/source"
 )
 
 // Connector represents a sdk.Connector for Adobe Marketo.
