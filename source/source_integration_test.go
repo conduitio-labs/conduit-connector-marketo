@@ -30,6 +30,7 @@ import (
 )
 
 func TestSource_SuccessfullSnapshot(t *testing.T) {
+	skipWithoutCredentials(t)
 	client, err := getClient()
 	if err != nil {
 		t.Fatal(err)
@@ -64,6 +65,7 @@ func TestSource_SuccessfullSnapshot(t *testing.T) {
 }
 
 func TestSource_SnapshotRestart(t *testing.T) {
+	skipWithoutCredentials(t)
 	client, err := getClient()
 	if err != nil {
 		t.Fatal(err)
@@ -108,6 +110,7 @@ func TestSource_SnapshotRestart(t *testing.T) {
 }
 
 func TestSource_EmptyDatabase(t *testing.T) {
+	skipWithoutCredentials(t)
 	src := newTestSource()
 	ctx := context.Background()
 	defer func() {
@@ -124,6 +127,7 @@ func TestSource_EmptyDatabase(t *testing.T) {
 }
 
 func TestSource_StartCDCAfterEmptyBucket(t *testing.T) {
+	skipWithoutCredentials(t)
 	ctx := context.Background()
 	src := newTestSource()
 	defer func() {
@@ -162,6 +166,7 @@ func TestSource_StartCDCAfterEmptyBucket(t *testing.T) {
 }
 
 func TestSource_NonExistentDatabase(t *testing.T) {
+	skipWithoutCredentials(t)
 	src := newTestSource()
 	ctx := context.Background()
 	defer func() {
@@ -181,6 +186,7 @@ func TestSource_NonExistentDatabase(t *testing.T) {
 }
 
 func TestSource_CDC_ReadRecordsUpdate(t *testing.T) {
+	skipWithoutCredentials(t)
 	src := newTestSource()
 	ctx := context.Background()
 	defer func() {
@@ -225,6 +231,7 @@ func TestSource_CDC_ReadRecordsUpdate(t *testing.T) {
 }
 
 func TestCDC_Delete(t *testing.T) {
+	skipWithoutCredentials(t)
 	ctx := context.Background()
 	src := newTestSource()
 	defer func() {
@@ -274,6 +281,7 @@ func TestCDC_Delete(t *testing.T) {
 }
 
 func TestSource_CDC_ReadRecordsInsertAfterTeardown(t *testing.T) {
+	skipWithoutCredentials(t)
 	src := newTestSource()
 	ctx := context.Background()
 	err := configAndOpen(ctx, src, nil)
@@ -318,6 +326,7 @@ func TestSource_CDC_ReadRecordsInsertAfterTeardown(t *testing.T) {
 }
 
 func TestOpenSource_FailsParsePosition(t *testing.T) {
+	skipWithoutCredentials(t)
 	ctx := context.Background()
 	source := &source.Source{}
 	defer func() {
@@ -335,6 +344,7 @@ func TestOpenSource_FailsParsePosition(t *testing.T) {
 }
 
 func TestOpenSource_InvalidPositionType(t *testing.T) {
+	skipWithoutCredentials(t)
 	ctx := context.Background()
 	source := &source.Source{}
 	err := source.Configure(ctx, getConfigs())

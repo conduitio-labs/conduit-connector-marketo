@@ -32,6 +32,7 @@ import (
 )
 
 func TestAcceptance(t *testing.T) {
+	skipWithoutCredentials(t)
 	src := &source.Source{}
 	client, err := getClient()
 	if err != nil {
