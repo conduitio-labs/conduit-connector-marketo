@@ -297,3 +297,13 @@ func configAndOpen(ctx context.Context, s *source.Source, pos opencdc.Position) 
 	}
 	return nil
 }
+
+// skipWithoutCredentials skips a test that talks to the Marketo API when the
+// MARKETO_CLIENT_* environment variables are not set (forks, dependabot PRs,
+// local runs), instead of failing it.
+func skipWithoutCredentials(t *testing.T) {
+	t.Helper()
+	if ClinetID == "" || ClientSecret == "" || ClientEndpoint == "" {
+		t.Skip("MARKETO_CLIENT_ID, MARKETO_CLIENT_SECRET and MARKETO_CLIENT_ENDPOINT must be set")
+	}
+}
